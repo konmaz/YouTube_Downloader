@@ -3,6 +3,7 @@ import re
 import urllib
 import requests
 from PIL import ImageTk
+import youtube_dl
 
 
 def get_video_id(youtube_url):
@@ -25,6 +26,13 @@ def get_thumb_file(yt_video_id):
     response = requests.get(url, stream=True)
     response.raw.decode_content = True
     image = Image.open(response.raw)
+
+    if image.size == (120, 90):  # The Image was not found
+        url = 'http://img.youtube.com/vi/'+yt_video_id+'/hqdefault.jpg'
+        response = requests.get(url, stream=True)
+        response.raw.decode_content = True
+        image = Image.open(response.raw)
+
     # Resize image to fit in the window
     image = image.resize((460, 258), resample=1)
     # return image
@@ -60,8 +68,8 @@ layout = [[sg.Image(filename="logo.png", background_color='#3a3a3a', pad=(25, 25
                [sg.Radio('Audio', 'RD_DWNL_TYPE', background_color='#3a3a3a', font=(
                    'Product Sans Light', 13), default=True, enable_events=True, key='btn_rd_audio')],
 
-               [sg.Radio('Video (Coming Soon)', 'RD_DWNL_TYPE', background_color='#3a3a3a', enable_events=True, 
-                    font=('Product Sans Light', 13), key='btn_rd_video', disabled=True, tooltip="Coming Soon")]],
+               [sg.Radio('Video (Coming Soon)', 'RD_DWNL_TYPE', background_color='#3a3a3a', enable_events=True,
+                         font=('Product Sans Light', 13), key='btn_rd_video', disabled=True, tooltip="Coming Soon")]],
 
                pad=(0, 15), background_color='#3a3a3a'),  # Radio Buttons
 
@@ -77,8 +85,9 @@ sg.theme_background_color('#3a3a3a')
 
 
 window = sg.Window('YouTube Downloader', layout, finalize=True, size=(
-    550, 700), icon="icon.ico", debugger_enabled=True)
+    550, 700), icon="icon.ico")
 old_value = ''
+sg.Print('Start Debug Window')
 # Event Loop to process "events"
 while True:
     event, values = window.read()
@@ -89,12 +98,11 @@ while True:
     if event in 'btn_dwn':  # EVENT Download Button was clicked
 
         if (video_id != False):  # If the text box url contains a valid video URL
-
-            window.find_element('txt_title').Update(
-                value='Title : '+get_video_tile(video_id))  # Update Title Text
-            window.find_element('img_thumb').Update(
-                data=get_thumb_file(video_id))  # Update Thumbnail Image
-
+            if (window['btn_rd_audio']):
+                #Download Audio
+                sg.Print('Download Audio')
+                
+                
             sg.Print('Download Button was clicked')
 
     elif event in 'txt_box_url':  # EVENT txt_box_url Value Was Changed
