@@ -99,10 +99,23 @@ while True:
 
         if (video_id != False):  # If the text box url contains a valid video URL
             if (window['btn_rd_audio']):
-                #Download Audio
+                # Download Audio
+                path = sg.PopupGetFile(
+                    'Αποθήκευση...', no_window=True, save_as=True, file_types=(("Mp3 Files", "*.mp3"),))
+                sg.Print("Path : "+path)
+                ydl_opts = {
+                    'format': 'bestaudio/best',
+                    'postprocessors': [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '192',
+                        
+                    }], }
+
                 sg.Print('Download Audio')
-                
-                
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([video_id])
+
             sg.Print('Download Button was clicked')
 
     elif event in 'txt_box_url':  # EVENT txt_box_url Value Was Changed
