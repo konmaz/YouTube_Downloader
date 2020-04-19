@@ -8,4 +8,4 @@ response = requests.get(url, stream=True)
 response.raw.decode_content = True
 image = Image.open(response.raw)
 image.show()
-requests image
+requests image()

@@ -37,25 +37,22 @@ def get_video_tile(yt_video_id):
     return (r.json()['title'])
 
 
-image_elem = sg.Image(filename='placeholder_thumbnail.png', pad=(
-    25, 10), background_color='#3a3a3a',)  # Video Image PlaceHolder
-
-text_elem = sg.Text(text='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi porta nulla a mi eleifend malesuada. A', pad=(30, (1, 18)), font=(
-    'Product Sans', 14), size=(41, 2), background_color='#3a3a3a', tooltip="Video Title",)  # Video Title Placeholder
-
 layout = [[sg.Image(filename="logo.png", background_color='#3a3a3a', pad=(25, 25, 25, 25))],
-          [image_elem], [text_elem],
 
-          [sg.InputText(key="txt_url", font=('Product Sans Light', 13), background_color='#6d6d6d', text_color='white', size=(
-              45, 0), pad=(28, 5), tooltip="Video URL", justification='center')],  # URL text box
+          [sg.Image(filename='placeholder_thumbnail.png', pad=(
+              25, 10), background_color='#3a3a3a', key='img_thumb')],  # Video Thumbnail
+
+          [sg.Text(text='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi porta nulla a mi eleifend malesuada. A', pad=(30, (1, 18)), font=(
+              'Product Sans', 14), size=(41, 2), background_color='#3a3a3a', tooltip="Video Title", key='txt_title')],  # Video Title 
+
+          [sg.InputText(font=('Product Sans Light', 13), background_color='#6d6d6d', text_color='white', size=(
+              45, 0), pad=(28, 5), tooltip="Video URL", justification='center', key="txt_box_url")],  # URL text box
 
           [sg.Button(image_filename="button.png", button_color=('#3a3a3a', '#3a3a3a'),
-                     border_width=0, tooltip="Download", key='btn_dwn', pad=(30, 20)),
-            sg.Combo      (['1080p','720p','480p'],default_value='1080p')
-                     
-                     ]
-
-
+                     border_width=0, tooltip="Download", pad=(30, 20), key='btn_dwn'),
+           sg.Combo(['1080p', '720p', '480p'], default_value='1080p',
+                    visible=False, key='combo_quality')  # Quality Pressets DISABLED for now
+           ]
 
           ]
 
@@ -64,7 +61,8 @@ layout = [[sg.Image(filename="logo.png", background_color='#3a3a3a', pad=(25, 25
 sg.theme_background_color('#3a3a3a')
 
 
-window = sg.Window('Window Title', layout, finalize=True, size=(550, 700))
+window = sg.Window('YouTube Downloader', layout, finalize=True, size=(
+    550, 700), icon="icon.ico", debugger_enabled=True)
 
 # Event Loop to process "events"
 while True:
@@ -73,13 +71,15 @@ while True:
         break
 
     elif event in 'btn_dwn':
-        url = values['txt_url']
+        url = values['txt_box_url']
         video_id = (get_video_id(url))
 
-        if (video_id != False):  # if the text box is not empty
-            text_elem.Update(value=get_video_tile(video_id))
-            thumb = get_thumb_file(video_id)  # get thumbnail image
-            image_elem.Update(data=thumb)  # update thumbnail
+        if (video_id != False):  # If the text box url isn't empty
+
+            window.find_element('txt_title').Update(
+                value=get_video_tile(video_id))  # Update Title Text
+            window.find_element('img_thumb').Update(
+                data=get_thumb_file(video_id))  # Update Thumbnail Image
 
 
 window.close()
