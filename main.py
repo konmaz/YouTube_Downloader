@@ -34,7 +34,12 @@ def get_thumb_file(yt_video_id):
 def get_video_tile(yt_video_id):
     r = requests.get(
         'https://noembed.com/embed?url=https://www.youtube.com/watch?v='+yt_video_id)
-    return (r.json()['title'])
+
+    sg.Print(r.json())
+    try:
+        return (r.json()['title'])
+    except KeyError:
+        return ' '
 
 
 layout = [[sg.Image(filename="logo.png", background_color='#3a3a3a', pad=(25, 25, 25, 25))],
@@ -42,18 +47,28 @@ layout = [[sg.Image(filename="logo.png", background_color='#3a3a3a', pad=(25, 25
           [sg.Image(filename='placeholder_thumbnail.png', pad=(
               25, 10), background_color='#3a3a3a', key='img_thumb')],  # Video Thumbnail
 
-          [sg.Text(text='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi porta nulla a mi eleifend malesuada. A', pad=(30, (1, 18)), font=(
-              'Product Sans', 14), size=(41, 2), background_color='#3a3a3a', tooltip="Video Title", key='txt_title')],  # Video Title 
+          [sg.Text(text='Title : ', pad=(30, (1, 18)), font=(
+              'Product Sans', 14), size=(41, 2), background_color='#3a3a3a', tooltip="Video Title", key='txt_title')],  # Video Title
 
           [sg.InputText(font=('Product Sans Light', 13), background_color='#6d6d6d', text_color='white', size=(
-              45, 0), pad=(28, 5), tooltip="Video URL", justification='center', key="txt_box_url")],  # URL text box
+              45, 0), pad=(28, 5), tooltip="Video URL", justification='center', enable_events=True, key="txt_box_url")],  # URL text box
 
           [sg.Button(image_filename="button.png", button_color=('#3a3a3a', '#3a3a3a'),
-                     border_width=0, tooltip="Download", pad=(30, 20), key='btn_dwn'),
-           sg.Combo(['1080p', '720p', '480p'], default_value='1080p',
-                    visible=False, key='combo_quality')  # Quality Pressets DISABLED for now
-           ]
+                     border_width=0, tooltip="Download", pad=((30, 5), 20), key='btn_dwn'),  # Download Button
 
+           sg.Column([
+               [sg.Radio('Audio', 'RD_DWNL_TYPE', background_color='#3a3a3a', font=(
+                   'Product Sans Light', 13), default=True, enable_events=True, key='btn_rd_audio')],
+
+               [sg.Radio('Video (Coming Soon)', 'RD_DWNL_TYPE', background_color='#3a3a3a', enable_events=True, 
+                    font=('Product Sans Light', 13), key='btn_rd_video', disabled=True, tooltip="Coming Soon")]],
+
+               pad=(0, 15), background_color='#3a3a3a'),  # Radio Buttons
+
+
+           sg.Combo(['1080p', '720p', '480p'], default_value='1080p',
+                    visible=False, key='combo_quality', disabled=True)  # Quality Pressets DISABLED for now
+           ],
           ]
 
 
@@ -63,23 +78,38 @@ sg.theme_background_color('#3a3a3a')
 
 window = sg.Window('YouTube Downloader', layout, finalize=True, size=(
     550, 700), icon="icon.ico", debugger_enabled=True)
-
+old_value = ''
 # Event Loop to process "events"
 while True:
     event, values = window.read()
     if event in (None, 'Cancel'):
         break
+    url = values['txt_box_url']
+    video_id = (get_video_id(url))
+    if event in 'btn_dwn':  # EVENT Download Button was clicked
 
-    elif event in 'btn_dwn':
-        url = values['txt_box_url']
-        video_id = (get_video_id(url))
-
-        if (video_id != False):  # If the text box url isn't empty
+        if (video_id != False):  # If the text box url contains a valid video URL
 
             window.find_element('txt_title').Update(
-                value=get_video_tile(video_id))  # Update Title Text
+                value='Title : '+get_video_tile(video_id))  # Update Title Text
             window.find_element('img_thumb').Update(
                 data=get_thumb_file(video_id))  # Update Thumbnail Image
+
+            sg.Print('Download Button was clicked')
+
+    elif event in 'txt_box_url':  # EVENT txt_box_url Value Was Changed
+        if old_value != values['txt_box_url']:
+            sg.Print('The value was changed')
+            old_value = values['txt_box_url']
+
+            if (video_id != False):  # If the text box url contains a valid video URL
+
+                window.find_element('txt_title').Update(
+                    value='Title : '+get_video_tile(video_id))  # Update Title Text
+                window.find_element('img_thumb').Update(
+                    data=get_thumb_file(video_id))  # Update Thumbnail Image
+
+    sg.Print('Event :', event, '\nValue :', values)
 
 
 window.close()
