@@ -42,8 +42,6 @@ def get_thumb_file(yt_video_id):
 def get_video_tile(yt_video_id):
     r = requests.get(
         'https://noembed.com/embed?url=https://www.youtube.com/watch?v='+yt_video_id)
-
-    sg.Print(r.json())
     try:
         return (r.json()['title'])
     except KeyError:
@@ -87,7 +85,7 @@ sg.theme_background_color('#3a3a3a')
 window = sg.Window('YouTube Downloader', layout, finalize=True, size=(
     550, 700), icon="icon.ico")
 old_value = ''
-sg.Print('Start Debug Window')
+#sg.Print('Start Debug Window')
 # Event Loop to process "events"
 while True:
     event, values = window.read()
@@ -102,7 +100,7 @@ while True:
                 # Download Audio
                 path = sg.PopupGetFile(
                     'Αποθήκευση...', no_window=True, save_as=True, file_types=(("Mp3 Files", "*.mp3"),))
-                sg.Print("Path : "+path)
+                #sg.Print("Path : "+path)
                 ydl_opts = {
                     'format': 'bestaudio/best',
                     'postprocessors': [{
@@ -112,15 +110,15 @@ while True:
                         
                     }], }
 
-                sg.Print('Download Audio')
+                #sg.Print('Download Audio')
                 with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([video_id])
 
-            sg.Print('Download Button was clicked')
+            #sg.Print('Download Button was clicked')
 
     elif event in 'txt_box_url':  # EVENT txt_box_url Value Was Changed
         if old_value != values['txt_box_url']:
-            sg.Print('The value was changed')
+            #sg.Print('The value was changed')
             old_value = values['txt_box_url']
 
             if (video_id != False):  # If the text box url contains a valid video URL
@@ -130,7 +128,7 @@ while True:
                 window.find_element('img_thumb').Update(
                     data=get_thumb_file(video_id))  # Update Thumbnail Image
 
-    sg.Print('Event :', event, '\nValue :', values)
+    #sg.Print('Event :', event, '\nValue :', values)
 
 
 window.close()
