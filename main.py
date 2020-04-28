@@ -4,6 +4,7 @@ import urllib
 import requests
 from PIL import ImageTk
 import youtube_dl
+import os
 
 
 def get_video_id(youtube_url):
@@ -67,15 +68,18 @@ layout = [[sg.Image(filename="logo.png", background_color='#3a3a3a', pad=(25, 25
                    'Product Sans Light', 13), default=True, enable_events=True, key='btn_rd_audio')],
 
                [sg.Radio('Video (Coming Soon)', 'RD_DWNL_TYPE', background_color='#3a3a3a', enable_events=True,
-                         font=('Product Sans Light', 13), key='btn_rd_video', disabled=True, tooltip="Coming Soon")]],
+                         font=('Product Sans Light', 13), key='btn_rd_video', disabled=True, tooltip="Coming Soon")]
+           ],
 
-               pad=(0, 15), background_color='#3a3a3a'),  # Radio Buttons
+               pad=(0, 15), background_color='#3a3a3a'),  # Radio Buttons Sg.Column ends here
 
 
            sg.Combo(['1080p', '720p', '480p'], default_value='1080p',
-                    visible=False, key='combo_quality', disabled=True)  # Quality Pressets DISABLED for now
+                    visible=False, key='combo_quality', disabled=True),  # Quality Pressets DISABLED for now
+
+
            ],
-          ]
+]
 
 
 # Create the Window
@@ -83,7 +87,7 @@ sg.theme_background_color('#3a3a3a')
 
 
 window = sg.Window('YouTube Downloader', layout, finalize=True, size=(
-    550, 700), icon="icon.ico")
+    550, 750), icon="icon.ico")
 old_value = ''
 #sg.Print('Start Debug Window')
 # Event Loop to process "events"
@@ -91,34 +95,42 @@ while True:
     event, values = window.read()
     if event in (None, 'Cancel'):
         break
+
     url = values['txt_box_url']
     video_id = (get_video_id(url))
     if event in 'btn_dwn':  # EVENT Download Button was clicked
 
         if (video_id != False):  # If the text box url contains a valid video URL
+
+            # The Radio Button AUDIO was picked so the user wants to donwload only the audio of the video
             if (window['btn_rd_audio']):
                 # Download Audio
-                path = sg.PopupGetFile(
-                    'Αποθήκευση...', no_window=True, save_as=True, file_types=(("Mp3 Files", "*.mp3"),))
-                #sg.Print("Path : "+path)
-                ydl_opts = {
-                    'format': 'bestaudio/best',
-                    'postprocessors': [{
-                        'key': 'FFmpegExtractAudio',
-                        'preferredcodec': 'mp3',
-                        'preferredquality': '192',
-                        
-                    }], }
+                if (values['txt_path'] == ''):
+                    sg.PopupError("Path can't be empty")
+                else:
+                    #sg.Print("Path : "+path)
+                    ydl_opts = {
+                        'format': 'bestaudio/best',
+                        'postprocessors': [{
+                            'key': 'FFmpegExtractAudio',
+                            'preferredcodec': 'mp3',
+                            'preferredquality': '320',
 
-                #sg.Print('Download Audio')
-                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([video_id])
+
+                        }], }
+
+                    #sg.Print('Download Audio')
+                    os.chdir(values['txt_path'])
+                    print(values['txt_path'])
+                    # with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    # ydl.download([video_id])
 
             #sg.Print('Download Button was clicked')
 
     elif event in 'txt_box_url':  # EVENT txt_box_url Value Was Changed
+
+        # This check exist to encure that the url was changed so it won't download the same thumb twice
         if old_value != values['txt_box_url']:
-            #sg.Print('The value was changed')
             old_value = values['txt_box_url']
 
             if (video_id != False):  # If the text box url contains a valid video URL
@@ -128,7 +140,7 @@ while True:
                 window.find_element('img_thumb').Update(
                     data=get_thumb_file(video_id))  # Update Thumbnail Image
 
-    #sg.Print('Event :', event, '\nValue :', values)
+    sg.Print('Event :', event, '\nValue :', values)
 
 
 window.close()
